@@ -49,6 +49,7 @@ create table public.salpe_messages (
 );
 create index salpe_messages_conversation on public.salpe_messages(conversation_id,created_at);
 create index salpe_messages_user on public.salpe_messages(user_id);
+create index salpe_messages_conversation_user on public.salpe_messages(conversation_id,user_id);
 
 alter table public.salpe_conversations enable row level security;
 alter table public.salpe_messages enable row level security;
