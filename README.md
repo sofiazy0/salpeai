@@ -6,8 +6,8 @@ Aplicação de chat com interface preto fosco, animações discretas e layout re
 
 - Interface, login/cadastro, histórico, busca, exclusão e streaming implementados.
 - Contas e conversas dependem de um projeto Supabase dedicado e das variáveis abaixo.
-- **A integração AnyModel ainda não foi validada.** A URL fornecida (`https://anymodel.org/app/api-docs`) retornou HTTP 403 no ambiente de desenvolvimento. Nenhum endpoint nem identificador de modelo foi inventado.
-- Há um adaptador isolado para o contrato OpenAI Chat Completions com SSE. Ele fica **desativado por padrão**; só ative depois de confirmar esse contrato na documentação AnyModel. Se a API usar outro formato, ajuste `src/lib/anymodel.ts` e os testes de streaming.
+- A integração AnyModel foi validada contra a documentação pública atual: o serviço expõe uma API compatível com OpenAI em `https://anymodel.org/v1`, e o chat usa `POST /v1/chat/completions` com autenticação Bearer e suporte a streaming.
+- O adaptador do projeto já usa esse contrato e permanece server-only para evitar exposição da chave da API no navegador.
 - Sem configuração, o site mostra um aviso real de configuração e não simula contas nem respostas.
 
 ## Desenvolvimento
@@ -34,20 +34,26 @@ O cadastro envia a confirmação pelo Supabase. Depois de confirmar, a pessoa vo
 
 ## AnyModel
 
-Confirme na documentação autenticada: endpoint completo, autenticação, IDs dos modelos, formato do corpo, eventos de streaming e parâmetro de limite de saída. Quando compatível com o adaptador atual, configure:
+A base documentada é `https://anymodel.org/v1`. O adaptador usa o endpoint de chat completo `https://anymodel.org/v1/chat/completions`.
+
+Configure estas variáveis na Vercel:
 
 | Variável | Valor |
 | --- | --- |
-| `ANYMODEL_API_KEY` | Chave privada da conta AnyModel |
-| `ANYMODEL_CHAT_URL` | Endpoint HTTPS documentado em `anymodel.org` ou subdomínio |
+| `ANYMODEL_API_KEY` | Chave privada da conta AnyModel; nunca faça commit |
+| `ANYMODEL_CHAT_URL` | `https://anymodel.org/v1/chat/completions` |
 | `ANYMODEL_MODELS_JSON` | Array de objetos `{ "id": "id-real", "name": "nome-exibido" }` |
-| `ANYMODEL_API_FORMAT` | `openai-chat-completions`, apenas após confirmar o contrato |
+| `ANYMODEL_API_FORMAT` | `openai-chat-completions` |
 
-O adaptador usa `Authorization: Bearer`, `model`, `messages`, `stream: true` e `max_tokens: 4096`. Esses detalhes são **hipóteses explicitamente bloqueadas por configuração**, e não afirmações sobre o suporte atual da AnyModel. Se o provedor usar outro domínio, confirme-o antes de alterar a lista de origens permitidas em `providerUrl`.
+A configuração de exemplo inclui `gpt-5.6-sol`, `gpt-5.6-terra` e `gpt-5.6-luna`, que podem ser trocados por outros IDs suportados pelo catálogo AnyModel.
+
+O adaptador usa `Authorization: Bearer`, `model`, `messages`, `stream: true` e `max_tokens: 4096`. O endpoint é validado no servidor e só aceita HTTPS em `anymodel.org` ou subdomínios, reduzindo risco de SSRF por configuração indevida.
 
 ## Vercel
 
 Importe `sofiazy0/salpeai`, mantenha o framework Next.js, configure as variáveis e publique. O arquivo `vercel.json` define instalação por lockfile e compilação. Um deploy via upload de arquivos não cria automaticamente a integração Git; vincule o repositório nas configurações para publicar futuros pushes automaticamente.
+
+A chave `ANYMODEL_API_KEY` deve existir apenas nas Environment Variables da Vercel (Production/Preview conforme necessário) ou em `.env.local` no desenvolvimento. O `.gitignore` bloqueia arquivos `.env*`, exceto o `.env.example` sem segredos.
 
 ## Verificação
 
