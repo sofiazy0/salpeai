@@ -1,3 +1,5 @@
-import { Workspace } from "@/components/workspace";
-export const dynamic = "force-dynamic";
-export default function Home() { return <Workspace />; }
+import { WatchPartyHome } from "@/components/watch-party-home";
+
+export default function Home() {
+  return <WatchPartyHome />;
+}
